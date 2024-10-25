@@ -1,13 +1,30 @@
+using Application.Interface;
+using Application.Main;
+using Domain.Core;
+using Domain.Interface;
+using Infraestructure.Interface;
+using Infraestructure.Repository;
+using Infrastructure.Data;
+using Transversal.Common;
+using Transversal.Logging;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+// Agregar servicios al contenedor.
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+// Contenedor de dependencias
+builder.Services.AddSingleton<IConnectionFactory, ConnectionFactory>();
+builder.Services.AddSingleton<IAppLogger, LoggerAdapter>();
+builder.Services.AddScoped<IExchangeRateRepository, ExchangeRateRepository>();
+builder.Services.AddScoped<IExchangeRateDomain, ExchangeRateDomain>();
+builder.Services.AddScoped<IExchangeRateApplication, ExchangeRateApplication>();
+
+
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// Configurar el pipeline de solicitudes HTTP.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -16,29 +33,15 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-var summaries = new[]
+app.MapGet("/api/exchangerates", async (IExchangeRateApplication exchangeRateApplication, HttpResponse httpResponse) =>
 {
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
-
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
+    var response = await exchangeRateApplication.GetAll();
+    httpResponse.StatusCode = response.StatusCode;
+    await httpResponse.WriteAsJsonAsync(response);
 })
-.WithName("GetWeatherForecast")
+.WithName("GetAllExchangeRates")
 .WithOpenApi();
 
-app.Run();
 
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
+
+app.Run();

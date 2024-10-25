@@ -19,6 +19,8 @@
     <ProjectReference Include="..\Application.DTO\Application.DTO.csproj" />
     <ProjectReference Include="..\Application.Interface\Application.Interface.csproj" />
     <ProjectReference Include="..\Application.Main\Application.Main.csproj" />
+    <ProjectReference Include="..\Domain.Core\Domain.Core.csproj" />
+    <ProjectReference Include="..\Infraestructure.Repository\Infraestructure.Repository.csproj" />
     <ProjectReference Include="..\Transversal.Logging\Transversal.Logging.csproj" />
   </ItemGroup>
 
